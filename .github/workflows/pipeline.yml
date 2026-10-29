@@ -1,0 +1,43 @@
+name: Website CI-CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # ─────────── 🧑‍🍳 CI: TEST ───────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Lint HTML
+        run: npx --yes htmlhint index.html
+
+      - name: Run JS tests
+        run: node --test test/
+
+  # ─────────── 🏃 CD: DEPLOY ───────────
+  deploy:
+    needs: test
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Stamp version
+        run: |
+          (Get-Content index.html) -replace '__VERSION__', '${{ github.sha }}' | Set-Content index.html
+
+      - name: Copy site to server folder
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\deploy\mysite
+          Copy-Item index.html, style.css, math.js, script.js -Destination C:\deploy\mysite -Force
+          echo "🎉 Deployed ${{ github.sha }}"
