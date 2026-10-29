@@ -3,3 +3,6 @@ document.getElementById("btn").addEventListener("click", () => {
   count = add(count, 1);
   document.getElementById("count").textContent = count;
 });
+
+
+// changes to test the compatability of main branch to test 
